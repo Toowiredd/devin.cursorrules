@@ -110,5 +110,43 @@ class TestLLMAPI(unittest.TestCase):
         # Verify error handling
         self.assertIsNone(response)
 
+    @unittest.skipIf(skip_llm_tests, skip_message)
+    @patch('tools.llm_api.create_llm_client')
+    def test_query_llm_logging(self, mock_create_client):
+        # Set up mock
+        mock_create_client.return_value = self.mock_client
+        
+        with self.assertLogs('tools.llm_api', level='INFO') as log:
+            query_llm("Test prompt")
+            self.assertIn("INFO:tools.llm_api:Querying LLM with prompt: Test prompt", log.output)
+            self.assertIn("INFO:tools.llm_api:Successfully received response from LLM", log.output)
+
+    @unittest.skipIf(skip_llm_tests, skip_message)
+    @patch('tools.llm_api.create_llm_client')
+    def test_query_llm_error_logging(self, mock_create_client):
+        # Set up mock to raise an exception
+        self.mock_client.chat.completions.create.side_effect = Exception("Test error")
+        mock_create_client.return_value = self.mock_client
+        
+        with self.assertLogs('tools.llm_api', level='ERROR') as log:
+            query_llm("Test prompt")
+            self.assertIn("ERROR:tools.llm_api:Error querying LLM: Test error", log.output)
+
+    @unittest.skipIf(skip_llm_tests, skip_message)
+    @patch('tools.llm_api.create_llm_client')
+    def test_create_llm_client_with_custom_config(self, mock_create_client):
+        # Test client creation with custom base_url and api_key
+        custom_base_url = "http://custom-url.com"
+        custom_api_key = "custom-api-key"
+        client = create_llm_client(base_url=custom_base_url, api_key=custom_api_key)
+        
+        # Verify OpenAI was called with correct parameters
+        mock_create_client.assert_called_once_with(
+            base_url=custom_base_url,
+            api_key=custom_api_key
+        )
+        
+        self.assertEqual(client, self.mock_client)
+
 if __name__ == '__main__':
     unittest.main()
