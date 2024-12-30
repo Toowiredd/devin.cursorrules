@@ -44,8 +44,8 @@ Snippet: This is a snippet of the search result
 ```
 
 ## User Specified Lessons
-
+- Read the file before you try to edit it.
+- always search for a file or folder before creating it.
 - You have a python venv in ./py310.
 - Include info useful for debugging in the program output.
-- Read the file before you try to edit it.
 - Use LLM to perform flexible text understanding tasks. First test on a few files. After success, make it parallel.
