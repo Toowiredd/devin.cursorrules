@@ -5,7 +5,8 @@ from tools.web_scraper import (
     validate_url,
     parse_html,
     fetch_page,
-    process_urls
+    process_urls,
+    main
 )
 
 class TestWebScraper(unittest.TestCase):
@@ -130,6 +131,22 @@ class TestWebScraper(unittest.TestCase):
         self.assertEqual(mock_browser.new_context.call_count, 2)
         mock_pool_instance.map.assert_called_once()
         mock_browser.close.assert_awaited_once()
+
+    def test_main_invalid_arguments(self):
+        with patch('sys.argv', ['web_scraper.py', '--max-concurrent', 'invalid', 'https://example.com']):
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 2)
+
+        with patch('sys.argv', ['web_scraper.py', '--max-concurrent']):
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 2)
+
+        with patch('sys.argv', ['web_scraper.py']):
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 2)
 
 def async_test(coro):
     def wrapper(*args, **kwargs):
